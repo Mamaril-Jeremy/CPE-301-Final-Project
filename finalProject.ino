@@ -12,6 +12,13 @@ volatile unsigned char *myUCSR0C = (unsigned char *)0x00C2;
 volatile unsigned int  *myUBRR0  = (unsigned int *) 0x00C4;
 volatile unsigned char *myUDR0   = (unsigned char *)0x00C6;
 
+enum States {
+  DISABLED.
+  IDLE, 
+  ERROR,
+  RUNNING,
+  START
+};
 
 void setup(){
   U0init(9600);
