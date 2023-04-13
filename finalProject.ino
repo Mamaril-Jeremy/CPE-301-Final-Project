@@ -1,3 +1,8 @@
+#include <LiquidCrystal.h>
+#include <RTClib.h>
+#include <DHT.h>
+#include <Stepper.h>
+
 #define RDA 0x80
 #define TBE 0x20  
 
