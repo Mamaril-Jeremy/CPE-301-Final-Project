@@ -6,6 +6,9 @@
 #define RDA 0x80
 #define TBE 0x20  
 
+volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Yellow LED
+volatile unsigned char *portB = (unsigned char *) 0x25;
+
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
 volatile unsigned char *myUCSR0B = (unsigned char *)0x00C1;
 volatile unsigned char *myUCSR0C = (unsigned char *)0x00C2;
