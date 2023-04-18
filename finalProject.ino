@@ -43,7 +43,7 @@ enum States {
 void setup(){
   U0init(9600);
   
-  
+  adc_init();
 }
 
 
