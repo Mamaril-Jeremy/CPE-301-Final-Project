@@ -1,3 +1,5 @@
+//Author: Jeremy Mamaril and Brandon (Ri) Yu
+
 #include <LiquidCrystal.h>
 #include <RTClib.h>
 #include <DHT.h>
