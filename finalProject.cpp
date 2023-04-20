@@ -20,6 +20,9 @@ volatile unsigned char *portB = (unsigned char *) 0x25;
 volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Blue LED
 volatile unsigned char *portB = (unsigned char *) 0x25;
 
+volatile unsigned char *portDDRE = (unsigned char *) 0x2D; //Button
+volatile unsigned char *portE = (unsigned char *) 0x2E;
+
 //UART registers
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
 volatile unsigned char *myUCSR0B = (unsigned char *)0x00C1;
@@ -52,7 +55,9 @@ void setup(){
 
 
 void loop(){
-  
+  //Working with motor
+
+
 }
 
 void writeToLCD() {
