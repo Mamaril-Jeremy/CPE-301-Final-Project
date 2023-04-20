@@ -129,7 +129,7 @@ void adc_init()
 
 unsigned int adc_read(unsigned char adc_channel_num)
 {
-  *my_ADMUX = (0x40 | adc_channel_num); // 0x40 sets the REFS0 bit to use AVCC as reference voltage
+  *my_ADMUX = (0x40 | adc_channel_num); 
 
   // Enable the ADC and set the prescaler to divide by 128 for a 125kHz ADC clock
   *my_ADCSRA = 0x87; // 0x87 sets the ADEN, ADSC, and ADPS2-ADPS0 bits
