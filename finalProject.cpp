@@ -64,6 +64,8 @@ void loop(){
 
   //state changes
   
+  //random comments
+  
 }
 
 void writeToLCD() {
