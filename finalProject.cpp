@@ -52,18 +52,6 @@ void setup(){
 
 
 void loop(){
-  //Water level monitoring
-
-  //Lcd display
-  
-
-  //Clock monitoring
-
-  //Temperature 
-
-  //Motor
-
-  //state changes
   
 }
 
