@@ -50,7 +50,17 @@ void setup(){
 
 
 void loop(){
-  
+  //Water level mointering
+
+  //Lcd display
+
+  //Clock mointiering
+
+  //temperture 
+
+  //Motor
+
+  //state changes
   
 }
 
