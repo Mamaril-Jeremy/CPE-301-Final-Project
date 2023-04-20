@@ -6,12 +6,16 @@
 #include <Stepper.h>
 
 #define RDA 0x80
-#define TBE 0x20  
+#define TBE 0x20 
+
+int stepsPerRev = 2038;
+Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4 , 5);
 
 volatile unsigned char *portPinB = (unsigned char *) 0x23;
 volatile unsigned char *portDDRB = (unsigned char *) 0x24; //LEDs
 volatile unsigned char *portB = (unsigned char *) 0x25;
 
+volatile unsigned char *portPinE = (unsigned char *) 0x2C;
 volatile unsigned char *portDDRE = (unsigned char *) 0x2D; //Button
 volatile unsigned char *portE = (unsigned char *) 0x2E;
 
@@ -51,7 +55,31 @@ void setup(){
 
 
 void loop(){
+  //working with motor
+  bool moveLeft = false, moveRight = false;
 
+  if(*portPinE &= 0b00000001){
+    moveLeft = true;
+  }
+  if(*portPinE &= 0b00000010){
+    moveRight = true;
+  }
+
+  if(moveLeft == true  || moveRight == true){
+    moveVent(moveLeft, moveRight);
+  }
+}
+
+void moveVent(bool left, bool right){
+  if(left == true){
+    myStepper.setSpeed(5);
+    myStepper.step(-stepsPerRev);
+  }
+
+  if(right == true){
+    myStepper.setSpeed(5);
+    myStepper.step(stepsPerRev);
+  }
 }
 
 void writeToLCD() {
