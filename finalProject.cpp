@@ -1,4 +1,5 @@
 //Author: Jeremy Mamaril and Brandon (Ri) Yu
+//testing branches
 
 #include <LiquidCrystal.h>
 #include <DHT.h>
@@ -43,18 +44,7 @@ void setup(){
 
 
 void loop(){
-  //Water level monitoring
 
-  //Lcd display
-  writeToLCD();
-
-  //Clock monitoring
-
-  //Temperature 
-
-  //Motor
-
-  //state changes
   
   //random comments
   
