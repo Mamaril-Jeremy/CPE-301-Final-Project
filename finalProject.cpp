@@ -8,16 +8,8 @@
 #define RDA 0x80
 #define TBE 0x20  
 
-volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Yellow LED
-volatile unsigned char *portB = (unsigned char *) 0x25;
-
-volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Green LED
-volatile unsigned char *portB = (unsigned char *) 0x25;
-
-volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Red LED
-volatile unsigned char *portB = (unsigned char *) 0x25;
-
-volatile unsigned char *portDDRB = (unsigned char *) 0x24; //Blue LED
+volatile unsigned char *portPinB = (unsigned char *) 0x23;
+volatile unsigned char *portDDRB = (unsigned char *) 0x24; //LEDs
 volatile unsigned char *portB = (unsigned char *) 0x25;
 
 //UART registers
@@ -52,6 +44,7 @@ void setup(){
 
 
 void loop(){
+
   
   //random comments
   
