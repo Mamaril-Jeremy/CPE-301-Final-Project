@@ -32,6 +32,7 @@ volatile unsigned char* my_ADCSRB = (unsigned char*) 0x7B;
 volatile unsigned char* my_ADCSRA = (unsigned char*) 0x7A;
 volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
 
+
 //Timers
 volatile unsigned char *myTCCR1A = (unsigned char *) 0x80;
 volatile unsigned char *myTCCR1B = (unsigned char *) 0x81;
@@ -51,6 +52,8 @@ enum States {
 
 void setup(){
   U0init(9600);
+  
+  *portDDRB |= 0b11110000; //using pwm pins 10-13 for LEDs
   
   adc_init(); //initializes the ADC
   
@@ -149,21 +152,26 @@ void adc_init()
 
 unsigned int adc_read(unsigned char adc_channel_num)
 {
-  *my_ADMUX = (0x40 | adc_channel_num); 
-
-  // Enable the ADC and set the prescaler to divide by 128 for a 125kHz ADC clock
-  *my_ADCSRA = 0x87; // 0x87 sets the ADEN, ADSC, and ADPS2-ADPS0 bits
-
-  // Wait for the conversion to complete
-  while ((*my_ADCSRA) & (1 << ADSC)) {}
-
-  // Read the ADC result from the data registers
-  int adcValue = *my_ADC_DATA;
-
-  // Disable the ADC
-  *my_ADCSRA = 0x00; // 0x00 clears the ADEN bit
-
-  return adcValue;
+  // clear the channel selection bits (MUX 4:0)
+  *my_ADMUX  &= 0b11100000;
+  // clear the channel selection bits (MUX 5)
+  *my_ADCSRB &= 0b11110111;
+  // set the channel number
+  if(adc_channel_num > 7)
+  {
+    // set the channel selection bits, but remove the most significant bit (bit 3)
+    adc_channel_num -= 8;
+    // set MUX bit 5
+    *my_ADCSRB |= 0b00001000;
+  }
+  // set the channel selection bits
+  *my_ADMUX  += adc_channel_num;
+  // set bit 6 of ADCSRA to 1 to start a conversion
+  *my_ADCSRA |= 0x40;
+  // wait for the conversion to complete
+  while((*my_ADCSRA & 0x40) != 0);
+  // return the result in the ADC data register
+  return *my_ADC_DATA;
 }
 //End of ADC functions
 
