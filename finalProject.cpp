@@ -47,7 +47,8 @@ dht DHT;
 
 int waterLevel;
 
-char sensorValue[15] = “Sensor value: “;
+
+char sensorValue[15] = â€œSensor value: â€œ;
 
 enum States {
   DISABLED = 1,
@@ -65,6 +66,8 @@ void setup(){
   adc_init(); //initializes the ADC
 
   lcd.begin(16, 2); //starts the lcd
+
+  *portDDRE &= 0b11111011;
 }
 
 
@@ -72,6 +75,14 @@ void setup(){
 
 
 void loop(){
+
+
+  //Reset Buttom
+  bool reset = false;
+  if(*portPinE &= 0b00000100){
+    reset = true;
+  }
+
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
 
@@ -109,11 +120,13 @@ void moveVent(bool left, bool right){
   if(left == true){
     myStepper.setSpeed(5);
     myStepper.step(-stepsPerRev);
+    my_delay(10);
   }
 
   if(right == true){
     myStepper.setSpeed(5);
     myStepper.step(stepsPerRev);
+    my_delay(10);
   }
 }
 
