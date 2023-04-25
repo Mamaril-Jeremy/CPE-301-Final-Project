@@ -9,6 +9,9 @@
 #define RDA 0x80
 #define TBE 0x20 
 
+int thresHold = 10;
+int temp, waterLevel;
+
 int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4 , 5); //pins 2-5 taken
 
@@ -41,7 +44,6 @@ volatile unsigned char *myTIMSK1 = (unsigned char *) 0x6F;
 volatile unsigned int  *myTCNT1  = (unsigned  int *) 0x84;
 volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
-//test
 
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 
@@ -69,7 +71,9 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
 
-  *portDDRE &= 0b11111011;
+  *portDDRE &= 0b11010011; //set all port E to input
+
+  *portB |= 0b10000000; //set yellow Led on for disabled state
 }
 
 
@@ -78,10 +82,20 @@ void setup(){
 
 void loop(){
 
+  //start stop button
+  bool start = false;
+  if(*portPinE &= 0b00100000){
+    if(start){
+      start = false;
+    }
+    else{
+      start = true;
+    }
+  }
 
-  //Reset Buttom
+  //Reset Buttum
   bool reset = false;
-  if(*portPinE &= 0b00000100){
+  if(*portPinE &= 0b00010000){
     reset = true;
   }
 
@@ -114,8 +128,24 @@ void loop(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
+  
+  if(start == true){
+    if(temp <= thresHold || reset == true){
+      //idle
+    }
+    if(temp > thresHold){
+      //running
+    }
+    if(waterLevel <= thresHold){
+      //error
+    }
+  }
+  else{
+    //disabled
+  }
 }
 
+//End of loop
 
 
 void moveVent(bool left, bool right){
