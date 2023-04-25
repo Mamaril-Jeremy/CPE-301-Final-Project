@@ -47,7 +47,8 @@ dht DHT;
 
 int waterLevel;
 
-char sensorValue[15] = �Sensor value: �;
+
+char sensorValue[15] = “Sensor value: “;
 
 enum States {
   DISABLED = 1,
@@ -74,6 +75,7 @@ void setup(){
 
 
 void loop(){
+
 
   //Reset Buttom
   bool reset = false;
