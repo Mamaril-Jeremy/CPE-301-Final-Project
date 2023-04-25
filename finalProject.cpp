@@ -20,6 +20,10 @@ volatile unsigned char *portPinE = (unsigned char *) 0x2C;
 volatile unsigned char *portDDRE = (unsigned char *) 0x2D; //Button
 volatile unsigned char *portE = (unsigned char *) 0x2E; //pins taken
 
+volatile unsigned char *portPinC = (unsigned char *) 0x26;
+volatile unsigned char *portDDRC = (unsigned char *) 0x27; //For motor 
+volatile unsigned char *portC = (unsigned char *) 0x28; //pins 30, 32, 34, and 36 taken
+
 //UART registers
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
 volatile unsigned char *myUCSR0B = (unsigned char *)0x00C1;
@@ -70,10 +74,9 @@ void setup(){
   lcd.begin(16, 2); //starts the lcd
 
   *portDDRE &= 0b11111011;
+
+  *portDDRC |= 0b10101010; //initializes pins 30, 32, 34, and 36 to output
 }
-
-
-
 
 
 void loop(){
