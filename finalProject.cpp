@@ -41,6 +41,8 @@ volatile unsigned char *myTIMSK1 = (unsigned char *) 0x6F;
 volatile unsigned int  *myTCNT1  = (unsigned  int *) 0x84;
 volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
+//test
+
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 
 dht DHT;
