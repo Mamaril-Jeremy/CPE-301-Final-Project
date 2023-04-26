@@ -5,15 +5,13 @@
 #include <DHT.h>
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
+#define WATER_LEVEL_THRESHOLD 150
+#define TEMP_THRESHOLD 25
+
+#define DHT11_PIN 25
 
 #define RDA 0x80
 #define TBE 0x20 
-
-int thresHold = 10;
-int temp, waterLevel;
-
-int stepsPerRev = 2038;
-Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4 , 5); //pins 2-5 taken
 
 volatile unsigned char *portPinB = (unsigned char *) 0x23;
 volatile unsigned char *portDDRB = (unsigned char *) 0x24; //LEDs 
@@ -50,44 +48,38 @@ volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
 
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
-
 dht DHT;
+Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
+int temp, waterLevel;
+int stepsPerRev = 2038;
 
-int waterLevel;
-
-
-char sensorValue[15] = “Sensor value: “;
+char sensorValue[14] = “Sensor value: “;
 
 enum States {
-  DISABLED = 1,
-  IDLE = 2, 
-  ERROR = 3,
-  RUNNING = 4,
+  DISABLED = 1, //yellow LED
+  IDLE = 2, //green LED
+  ERROR = 3, //red LED
+  RUNNING = 4, //blue LED
 };
+
+enum States currentState = DISABLED;
 
 void setup(){
   U0init(9600);
+  adc_init(); //initializes the ADC
   
   *portDDRB |= 0b11111000; //using pwm pins 10-13 for LEDs, pin 50 for power to water sensor
   *portB &= 0b11110111; //turn the sensor off
 
-  adc_init(); //initializes the ADC
-
   lcd.begin(16, 2); //starts the lcd
 
-
   *portDDRE &= 0b11010011; //set all port E to input
-
-  *portB |= 0b10000000; //set yellow Led on for disabled state
-}
-
-
-  *portDDRC |= 0b10101010; //initializes pins 30, 32, 34, and 36 to output
+  *portB |= 0b10000000; //turn on yellow Led on for disabled state
+  *portDDRC |= 0b10101010; //initializes pins 30, 32, 34, and 36 to output for fan
 }
 
 
 void loop(){
-
   //start stop button
   bool start = false;
   if(*portPinE &= 0b00100000){
@@ -99,7 +91,7 @@ void loop(){
     }
   }
 
-  //Reset Buttum
+  //Reset Button
   bool reset = false;
   if(*portPinE &= 0b00010000){
     reset = true;
@@ -117,6 +109,51 @@ void loop(){
   U0putchar((char) waterLevel);
   U0putchar(\n);
 
+  switch(currentState) {
+    case DISABLED:
+      Serial.println("Disabled State"); //for now
+      disabled_state();
+      break;
+    case IDLE:
+      Serial.println("Idle State");
+      idle_state();
+      break;
+    case ERROR:
+      Serial.println("Error State");
+      error_state();
+      break;
+    case RUNNING:
+      Serial.println("Running State");
+      running_state();
+      break;
+    default:
+      break;
+  }
+}
+//End of loop
+
+void disabled_state(){
+  *portB |= 0b10000000; //turn on yellow LED on for disabled state
+  *portB &= 0b10001111; //turn off all other LEDs
+  writeToLCD(); //display stuff to LCD
+
+  //working with stepper motor
+  bool moveLeft = false, moveRight = false;
+
+  if(*portPinE &= 0b00000001){
+    moveLeft = true;
+  }
+  if(*portPinE &= 0b00000010){
+    moveRight = true;
+  }
+  if(moveLeft == true  || moveRight == true){
+    moveVent(moveLeft, moveRight);
+  }
+}
+
+void idle_state(){
+  *portB |= 0b01000000; //turn on green LED on for disabled state
+  *portB &= 0b01001111; //turn off all other LEDs
   writeToLCD();
 
   //working with stepper motor
@@ -134,40 +171,37 @@ void loop(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
-  
-  if(start == true){
-    if(temp <= thresHold || reset == true){
-      //idle
-    }
-    if(temp > thresHold){
-      //running
-    }
-    if(waterLevel <= thresHold){
-      //error
-    }
-  }
-  else{
-    //disabled
-  }
 }
 
-//End of loop
+void error_state(){
+  *portB |= 0b00100000; //turn on red LED on for disabled state
+  *portB &= 0b00101111; //turn off all other LEDs
+  writeToLCD();
 
-
-void moveVent(bool left, bool right){
-  if(left == true){
-    myStepper.setSpeed(5);
-    myStepper.step(-stepsPerRev);
-    my_delay(10);
-  }
-
-  if(right == true){
-    myStepper.setSpeed(5);
-    myStepper.step(stepsPerRev);
-    my_delay(10);
-  }
+ ///no stepper motor
 }
 
+void running_state(){
+  *portB |= 0b00010000; //turn on yellow LED on for disabled state
+  *portB &= 0b00011111; //turn off all other LEDs
+  writeToLCD();
+
+  //working with stepper motor
+
+  bool moveLeft = false, moveRight = false;
+
+  if(*portPinE &= 0b00000001){
+    moveLeft = true;
+  }
+
+  if(*portPinE &= 0b00000010){
+    moveRight = true;
+  }
+
+  if(moveLeft == true  || moveRight == true){
+    moveVent(moveLeft, moveRight);
+  }
+}
 
 void writeToLCD() {
   int error = DHT.read11(DHT11_PIN);
@@ -182,6 +216,19 @@ void writeToLCD() {
   lcd.print("%");
 }
 
+
+void moveVent(bool left, bool right){
+  if(left == true){
+    myStepper.setSpeed(5);
+    myStepper.step(-stepsPerRev);
+    my_delay(10);
+  }
+  if(right == true){
+    myStepper.setSpeed(5);
+    myStepper.step(stepsPerRev);
+    my_delay(10);
+  }
+}
 
 
 //Start of UART functions
@@ -241,7 +288,6 @@ void adc_init()
 
 
 unsigned int adc_read(unsigned char adc_channel_num)
-
 {
   // clear the channel selection bits (MUX 4:0)
   *my_ADMUX  &= 0b11100000;
