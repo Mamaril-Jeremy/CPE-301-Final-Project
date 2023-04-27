@@ -2,7 +2,7 @@
 
 #include <LiquidCrystal.h>
 #include <Stepper.h>
-#include <DHT.h>
+#include <dht.h>
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
 #define FAN_ENABLE 30
@@ -50,12 +50,11 @@ volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 dht DHT;
+const int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
-bool moveLeft = false, moveRight = false;
+bool moveLeft = false, moveRight = false, start;
 int temp, waterLevel;
-int stepsPerRev = 2038;
 
-char sensorValue[14] = "Sensor value: ";
 
 enum States {
   DISABLED = 1, //yellow LED
@@ -75,15 +74,17 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
 
-  *portDDRE &= 0b11010011; //set all port E to input
+  *portDDRE &= 0b11001100; //set all port E to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
   *portDDRC |= 0b00101010; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3), and 36 to output for fan
+
+  start = false;
 }
 
 
 void loop(){
   //start stop button
-  bool start = false;
+  
   if(*portPinE &= 0b00100000){
     if(start){
       start = false;
@@ -106,7 +107,8 @@ void loop(){
 
   *portB &= 0b11110111; //turn the sensor off
 
-  for(int i = 0; i < 15; i++){U0putchar(sensorValue[i]);}
+  Serial.print("Sensor value: ");
+  Serial.println(waterLevel);
 
   U0putchar((char) waterLevel);
 
@@ -114,7 +116,7 @@ void loop(){
   if(start == false){
     currentState = DISABLED;
   }
-  if(state == true && (reset == true || temp <= TEMP_THRESHOLD)){
+  if(start == true || reset == true || temp <= TEMP_THRESHOLD){ 
     currentState = IDLE;
   }
   if(start == true && temp > TEMP_THRESHOLD){
