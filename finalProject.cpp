@@ -109,6 +109,21 @@ void loop(){
   U0putchar((char) waterLevel);
   U0putchar(\n);
 
+  //changing and updateing the state
+  if(start == false){
+    currentState = DISABLED;
+  }
+  if(state == true && (reset == true || temp <= TEMP_THRESHOLD)){
+    currentState = IDLE;
+  }
+  if(start == true && temp > TEMP_THRESHOLD){
+    currentState = RUNNING;
+  }
+  if(start == true && (waterLevel <= WATER_LEVEL_THRESHOLD)){
+    currentState = ERROR;
+  }
+
+  //execute the instructions for the state
   switch(currentState) {
     case DISABLED:
       Serial.println("Disabled State"); //for now
