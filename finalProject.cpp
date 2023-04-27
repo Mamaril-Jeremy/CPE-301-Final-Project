@@ -5,6 +5,7 @@
 #include <DHT.h>
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
+#define FAN_ENABLE 30
 #define WATER_LEVEL_THRESHOLD 150
 #define TEMP_THRESHOLD 25
 
@@ -50,10 +51,11 @@ volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 dht DHT;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
+bool moveLeft = false, moveRight = false;
 int temp, waterLevel;
 int stepsPerRev = 2038;
 
-char sensorValue[14] = “Sensor value: “;
+char sensorValue[14] = "Sensor value: ";
 
 enum States {
   DISABLED = 1, //yellow LED
@@ -75,7 +77,7 @@ void setup(){
 
   *portDDRE &= 0b11010011; //set all port E to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
-  *portDDRC |= 0b10101010; //initializes pins 30, 32, 34, and 36 to output for fan
+  *portDDRC |= 0b00101010; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3), and 36 to output for fan
 }
 
 
@@ -100,14 +102,13 @@ void loop(){
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
 
-  waterLevel = adc_read(WATER_SENSOR_PIN);
+  waterLevel = analogRead(WATER_SENSOR_PIN); //for now
 
   *portB &= 0b11110111; //turn the sensor off
 
   for(int i = 0; i < 15; i++){U0putchar(sensorValue[i]);}
 
   U0putchar((char) waterLevel);
-  U0putchar(\n);
 
   //changing and updateing the state
   if(start == false){
@@ -151,10 +152,9 @@ void disabled_state(){
   *portB |= 0b10000000; //turn on yellow LED on for disabled state
   *portB &= 0b10001111; //turn off all other LEDs
   writeToLCD(); //display stuff to LCD
+  turnOffFan(); //turn off fan
 
   //working with stepper motor
-  bool moveLeft = false, moveRight = false;
-
   if(*portPinE &= 0b00000001){
     moveLeft = true;
   }
@@ -170,11 +170,9 @@ void idle_state(){
   *portB |= 0b01000000; //turn on green LED on for disabled state
   *portB &= 0b01001111; //turn off all other LEDs
   writeToLCD();
+  turnOffFan(); //turn off fan
 
   //working with stepper motor
-
-  bool moveLeft = false, moveRight = false;
-
   if(*portPinE &= 0b00000001){
     moveLeft = true;
   }
@@ -192,6 +190,7 @@ void error_state(){
   *portB |= 0b00100000; //turn on red LED on for disabled state
   *portB &= 0b00101111; //turn off all other LEDs
   writeToLCD();
+  turnOffFan(); //turn off fan
 
  ///no stepper motor
 }
@@ -200,11 +199,9 @@ void running_state(){
   *portB |= 0b00010000; //turn on yellow LED on for disabled state
   *portB &= 0b00011111; //turn off all other LEDs
   writeToLCD();
+  turnOnFan(); //turn on fan
 
   //working with stepper motor
-
-  bool moveLeft = false, moveRight = false;
-
   if(*portPinE &= 0b00000001){
     moveLeft = true;
   }
@@ -243,6 +240,21 @@ void moveVent(bool left, bool right){
     myStepper.step(stepsPerRev);
     my_delay(10);
   }
+}
+
+void turnOnFan(){
+  *portC &= 0b11011111;
+  *portC |= 0b00001000;
+  analogWrite(FAN_ENABLE, 255);
+  my_delay(25);
+  analogWrite(FAN_ENABLE, 90);
+}
+
+void turnOffFan(){
+  *portC &= 0b11011111; // set pin 5 low
+  *portC &= 0b11110111; // set pin 3 low
+  analogWrite(FAN_ENABLE, 0); // set fan enable pin to 0 (turn off)
+  my_delay(25);
 }
 
 
@@ -335,37 +347,27 @@ unsigned int adc_read(unsigned char adc_channel_num)
 //End of ADC functions
 
 
-
 //My delay function
 void my_delay(unsigned int freq)
 {
   // calc period
   double period = 1.0/double(freq);
-  
   // 50% duty cycle
   double half_period = period/ 2.0f;
-  
   // clock period def
   double clk_period = 0.0000000625;
-
   // calc ticks
   unsigned int ticks = half_period / clk_period;
-
   // stop the timer
   *myTCCR1B &= 0xF8;
-
   // set the counts
   *myTCNT1 = (unsigned int) (65536 - ticks);
-
   // start the timer
   * myTCCR1B |= 0b00000001;
-
   // wait for overflow
   while((*myTIFR1 & 0x01)==0); // 0b00000000
-
   // stop the timer
   *myTCCR1B &= 0xF8;   //0b00000000
-
   // reset TOV           
   *myTIFR1 |= 0x01;
 }
