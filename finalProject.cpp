@@ -9,7 +9,7 @@
 #define WATER_LEVEL_THRESHOLD 150
 #define TEMP_THRESHOLD 25
 
-#define DHT11_PIN 37
+#define DHT11_PIN 34
 
 #define RDA 0x80
 #define TBE 0x20 
@@ -24,7 +24,7 @@ volatile unsigned char *portA = (unsigned char *) 0x22; //pins 22-28 taken
 
 volatile unsigned char *portPinC = (unsigned char *) 0x26;
 volatile unsigned char *portDDRC = (unsigned char *) 0x27; //For motor 
-volatile unsigned char *portC = (unsigned char *) 0x28; //pins 30, 32, 34, and 36 taken
+volatile unsigned char *portC = (unsigned char *) 0x28; //pins 30, 32
 
 //UART registers
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
@@ -68,9 +68,9 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
 
-  *portDDRA &= 0b01010101; //set all port E to input
+  *portDDRA &= 0b01010101; //set all port A to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
-  *portDDRC |= 0b01101010; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3), and 31 and 36 to output for fan
+  *portDDRC |= 0b00101000; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3) to output
 
   start = false;
 }
