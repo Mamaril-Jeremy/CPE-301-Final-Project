@@ -1,5 +1,5 @@
 # CPE-301-Final-Project
-## Jeremy Mamaril and Brandon YU
+## Jeremy Mamaril and Brandon (Ri) Yu
 
 ## Objective
 The purpose of this project was to create a swamp cooler that transitions through several states depending on whether or not the temperature of the water or the water level is below or above a threshold. The states that the cooler is running in are running, idle, error, and disabled, and the current state it is running in is indicated by lighting the corresponding LED. Output is also displayed by the serial monitor and the LCD display. The main components of the cooler are the Arduino Mega 2560 and the tools in the lab kit.
