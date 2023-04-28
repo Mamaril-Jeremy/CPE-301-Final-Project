@@ -68,7 +68,7 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
 
-  *portDDRA &= 0b01010101; //set all port A to input
+  *portDDRA &= 0b10101010; //set all port A to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
   *portDDRC |= 0b00101000; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3) to output
 
