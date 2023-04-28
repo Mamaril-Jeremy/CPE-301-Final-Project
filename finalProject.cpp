@@ -159,10 +159,10 @@ void disabled_state(){
   turnOffFan(); //turn off fan
 
   //working with stepper motor
-  if(*portPinE &= 0b00000100){
+  if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
-  if(*portPinE &= 0b00000001){
+  if(*portPinA &= 0b00000001){
     moveRight = true;
   }
   if(moveLeft == true  || moveRight == true){
@@ -181,7 +181,7 @@ void idle_state(){
     moveLeft = true;
   }
 
-  if(*portPinE &= 0b00000001){
+  if(*portPinA &= 0b00000001){
     moveRight = true;
   }
 
@@ -206,10 +206,10 @@ void running_state(){
   turnOnFan(); //turn on fan
 
   //working with stepper motor
-  if(*portPinE &= 0b00000100){
+  if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
-  if(*portPinE &= 0b00000001){
+  if(*portPinA &= 0b00000001){
     moveRight = true;
   }
   if(moveLeft == true  || moveRight == true){
