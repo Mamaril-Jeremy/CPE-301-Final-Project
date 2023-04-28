@@ -9,7 +9,7 @@
 #define WATER_LEVEL_THRESHOLD 150
 #define TEMP_THRESHOLD 25
 
-#define DHT11_PIN 25
+#define DHT11_PIN 37
 
 #define RDA 0x80
 #define TBE 0x20 
@@ -18,9 +18,9 @@ volatile unsigned char *portPinB = (unsigned char *) 0x23;
 volatile unsigned char *portDDRB = (unsigned char *) 0x24; //LEDs 
 volatile unsigned char *portB = (unsigned char *) 0x25; //pins 9-13 taken
 
-volatile unsigned char *portPinE = (unsigned char *) 0x2C;
-volatile unsigned char *portDDRE = (unsigned char *) 0x2D; //Button
-volatile unsigned char *portE = (unsigned char *) 0x2E; //pins taken
+volatile unsigned char *portPinA = (unsigned char *) 0x20;
+volatile unsigned char *portDDRA = (unsigned char *) 0x21; //Button
+volatile unsigned char *portA = (unsigned char *) 0x22; //pins 22-28 taken
 
 volatile unsigned char *portPinC = (unsigned char *) 0x26;
 volatile unsigned char *portDDRC = (unsigned char *) 0x27; //For motor 
@@ -32,12 +32,6 @@ volatile unsigned char *myUCSR0B = (unsigned char *)0x00C1;
 volatile unsigned char *myUCSR0C = (unsigned char *)0x00C2;
 volatile unsigned int  *myUBRR0  = (unsigned int *) 0x00C4;
 volatile unsigned char *myUDR0   = (unsigned char *)0x00C6;
-
-//ADC registers
-volatile unsigned char* my_ADMUX = (unsigned char*) 0x7C;
-volatile unsigned char* my_ADCSRB = (unsigned char*) 0x7B;
-volatile unsigned char* my_ADCSRA = (unsigned char*) 0x7A;
-volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
 
 //Timers
 volatile unsigned char *myTCCR1A = (unsigned char *) 0x80;
@@ -53,7 +47,7 @@ dht DHT;
 const int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
 bool moveLeft = false, moveRight = false, start;
-int temp, waterLevel;
+int error, temp, humidity, waterLevel;
 
 
 enum States {
@@ -74,9 +68,9 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
 
-  *portDDRE &= 0b11001100; //set all port E to input
+  *portDDRA &= 0b01010101; //set all port E to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
-  *portDDRC |= 0b00101010; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3), and 36 to output for fan
+  *portDDRC |= 0b01101010; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3), and 31 and 36 to output for fan
 
   start = false;
 }
@@ -85,7 +79,7 @@ void setup(){
 void loop(){
   //start stop button
   
-  if(*portPinE &= 0b00100000){
+  if(*portPinA &= 0b01000000){
     if(start){
       start = false;
     }
@@ -96,23 +90,31 @@ void loop(){
 
   //Reset Button
   bool reset = false;
-  if(*portPinE &= 0b00010000){
+  if(*portPinA &= 0b00010000){
     reset = true;
   }
 
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
 
-  waterLevel = analogRead(WATER_SENSOR_PIN); //for now
+  error = DHT.read11(DHT11_PIN);
+  temp = DHT.temperature;
+  humidity = DHT.humidity;
+  waterLevel = adc_read(WATER_SENSOR_PIN); 
 
   *portB &= 0b11110111; //turn the sensor off
 
+
+  Serial.print( "T = " );
+  Serial.print(DHT.temperature, 1);
+  Serial.print(" deg. C, H = ");
+  Serial.print(DHT.humidity, 1);
+  Serial.println("%");
   Serial.print("Sensor value: ");
   Serial.println(waterLevel);
+  Serial.println(currentState);
 
-  U0putchar((char) waterLevel);
-
-  //changing and updateing the state
+  //changing and updating the state
   if(start == false){
     currentState = DISABLED;
   }
@@ -157,10 +159,10 @@ void disabled_state(){
   turnOffFan(); //turn off fan
 
   //working with stepper motor
-  if(*portPinE &= 0b00000001){
+  if(*portPinE &= 0b00000100){
     moveLeft = true;
   }
-  if(*portPinE &= 0b00000010){
+  if(*portPinE &= 0b00000001){
     moveRight = true;
   }
   if(moveLeft == true  || moveRight == true){
@@ -175,11 +177,11 @@ void idle_state(){
   turnOffFan(); //turn off fan
 
   //working with stepper motor
-  if(*portPinE &= 0b00000001){
+  if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
 
-  if(*portPinE &= 0b00000010){
+  if(*portPinE &= 0b00000001){
     moveRight = true;
   }
 
@@ -204,21 +206,18 @@ void running_state(){
   turnOnFan(); //turn on fan
 
   //working with stepper motor
-  if(*portPinE &= 0b00000001){
+  if(*portPinE &= 0b00000100){
     moveLeft = true;
   }
-
-  if(*portPinE &= 0b00000010){
+  if(*portPinE &= 0b00000001){
     moveRight = true;
   }
-
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
 }
 
 void writeToLCD() {
-  int error = DHT.read11(DHT11_PIN);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Temp: ");
@@ -296,55 +295,20 @@ void U0putchar(unsigned char U0pdata)
 //Start of ADC functions
 void adc_init()
 {
-  // setup the A register
-  *my_ADCSRA |= 0b10000000; // set bit   7 to 1 to enable the ADC
-  *my_ADCSRA &= 0b10111111; // clear bit 5 to 0 to disable the ADC trigger mode
-  *my_ADCSRA &= 0b11011111; // clear bit 5 to 0 to disable the ADC interrupt
-  *my_ADCSRA &= 0b11011111; // clear bit 5 to 0 to set prescaler selection to slow reading
-
-  // setup the B register
-  *my_ADCSRB &= 0b11110111; // clear bit 3 to 0 to reset the channel and gain bits
-  *my_ADCSRB &= 0b11111000; // clear bit 2-0 to 0 to set free running mode
-
-  // setup the MUX Register
-  *my_ADMUX  &= 0b01111111; // clear bit 7 to 0 for AVCC analog reference
-  *my_ADMUX  |= 0b01000000; // set bit   6 to 1 for AVCC analog reference
-  *my_ADMUX  &= 0b11011111; // clear bit 5 to 0 for right adjust result
-  *my_ADMUX  &= 0b11011111; // clear bit 5 to 0 for right adjust result
-  *my_ADMUX  &= 0b11100000; // clear bit 4-0 to 0 to reset the channel and gain bits
+  ADCSRA = 0x80;
+  ADCSRB = 0X00;
+  ADMUX = 0x40;
 }
 
 
-
-unsigned int adc_read(unsigned char adc_channel_num)
-{
-  // clear the channel selection bits (MUX 4:0)
-  *my_ADMUX  &= 0b11100000;
-
-  // clear the channel selection bits (MUX 5)
-  *my_ADCSRB &= 0b11110111;
-
-  // set the channel number
-  if(adc_channel_num > 7)
-  {
-    // set the channel selection bits, but remove the most significant bit (bit 3)
-    adc_channel_num -= 8;
-    
-    // set MUX bit 5
-    *my_ADCSRB |= 0b00001000;
-  }
-
-  // set the channel selection bits
-  *my_ADMUX  += adc_channel_num;
-
-  // set bit 6 of ADCSRA to 1 to start a conversion
-  *my_ADCSRA |= 0x40;
-
-  // wait for the conversion to complete
-  while((*my_ADCSRA & 0x40) != 0);
-
-  // return the result in the ADC data register
-  return *my_ADC_DATA;
+unsigned int adc_read(unsigned char adc_channel){
+     ADCSRB &= 0xF7; //Reset MUX5.
+     ADCSRB |= (adc_channel & 0x08); //Set MUX5.
+     ADMUX &= 0xF8; //Reset MUX2:0.
+     ADMUX |= (adc_channel & 0x07); //Set MUX2:0.
+     ADCSRA |= 0x40; //Start the conversion.
+     while (ADCSRA & 0x40) {} //Wait for conversion to complete
+     return ADC; //Return the converted number.
 }
 //End of ADC functions
 
