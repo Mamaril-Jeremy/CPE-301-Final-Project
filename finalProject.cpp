@@ -24,7 +24,7 @@ volatile unsigned char *portA = (unsigned char *) 0x22; //pins 22-28 taken
 
 volatile unsigned char *portPinC = (unsigned char *) 0x26;
 volatile unsigned char *portDDRC = (unsigned char *) 0x27; //For motor 
-volatile unsigned char *portC = (unsigned char *) 0x28; //pins 30, 32
+volatile unsigned char *portC = (unsigned char *) 0x28; //pins 32 and 34
 
 //UART registers
 volatile unsigned char *myUCSR0A = (unsigned char *)0x00C0;
@@ -46,7 +46,7 @@ LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 tak
 dht DHT;
 const int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
-bool moveLeft = false, moveRight = false, start;
+bool moveLeft = false, moveRight = false, start, reset;
 int error, temp, humidity, waterLevel;
 
 
@@ -72,7 +72,7 @@ void setup(){
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
   *portDDRC |= 0b00101000; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3) to output
 
-  start = false;
+  start = reset = false;
 }
 
 
@@ -89,18 +89,22 @@ void loop(){
   }
 
   //Reset Button
-  bool reset = false;
   if(*portPinA &= 0b00010000){
-    reset = true;
+    if(reset){
+      reset = false;
+    }
+    else{
+      reset = true;
+    }
   }
 
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
 
   error = DHT.read11(DHT11_PIN);
-  temp = DHT.temperature;
+  temp = 50;
   humidity = DHT.humidity;
-  waterLevel = adc_read(WATER_SENSOR_PIN); 
+  waterLevel = 200; 
 
   *portB &= 0b11110111; //turn the sensor off
 
@@ -122,10 +126,10 @@ void loop(){
     if(reset == true || temp <= TEMP_THRESHOLD){ 
       currentState = IDLE;
     }
-    if(temp > TEMP_THRESHOLD){
+    if(temp > TEMP_THRESHOLD && waterLevel >= WATER_LEVEL_THRESHOLD){
       currentState = RUNNING;
     }
-    if(waterLevel <= WATER_LEVEL_THRESHOLD){
+    if(waterLevel < WATER_LEVEL_THRESHOLD){
       currentState = ERROR;
     }
   }
@@ -170,7 +174,6 @@ void disabled_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
-  my_delay(150);
 }
 
 void idle_state(){
@@ -191,7 +194,6 @@ void idle_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
-  my_delay(150);
 }
 
 void error_state(){
@@ -201,11 +203,10 @@ void error_state(){
   turnOffFan(); //turn off fan
 
  ///no stepper motor
-  my_delay(150);
 }
 
 void running_state(){
-  *portB |= 0b00010000; //turn on yellow LED on for disabled state
+  *portB |= 0b00010000; //turn on blue LED on for disabled state
   *portB &= 0b00011111; //turn off all other LEDs
   writeToLCD();
   turnOnFan(); //turn on fan
@@ -220,7 +221,6 @@ void running_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
-  my_delay(150);
 }
 
 void writeToLCD() {
@@ -250,11 +250,12 @@ void moveVent(bool left, bool right){
 }
 
 void turnOnFan(){
-  *portC &= 0b11011111;
-  *portC |= 0b00001000;
-  analogWrite(FAN_ENABLE, 255);
-  my_delay(25);
-  analogWrite(FAN_ENABLE, 90);
+  for(int i = 255; i>100;i--){
+    *portC &= 0b11011111;
+    *portC |= 0b00001000;
+    analogWrite(FAN_ENABLE, i*2);
+    my_delay(25);
+  }
 }
 
 void turnOffFan(){
