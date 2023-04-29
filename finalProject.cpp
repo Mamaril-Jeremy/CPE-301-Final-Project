@@ -118,14 +118,16 @@ void loop(){
   if(start == false){
     currentState = DISABLED;
   }
-  if(start == true || reset == true || temp <= TEMP_THRESHOLD){ 
-    currentState = IDLE;
-  }
-  if(start == true && temp > TEMP_THRESHOLD){
-    currentState = RUNNING;
-  }
-  if(start == true && (waterLevel <= WATER_LEVEL_THRESHOLD)){
-    currentState = ERROR;
+  else{
+    if(reset == true || temp <= TEMP_THRESHOLD){ 
+      currentState = IDLE;
+    }
+    if(temp > TEMP_THRESHOLD){
+      currentState = RUNNING;
+    }
+    if(waterLevel <= WATER_LEVEL_THRESHOLD){
+      currentState = ERROR;
+    }
   }
 
   //execute the instructions for the state
