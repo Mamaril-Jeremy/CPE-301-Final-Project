@@ -170,6 +170,7 @@ void disabled_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
+  my_delay(150);
 }
 
 void idle_state(){
@@ -190,6 +191,7 @@ void idle_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
+  my_delay(150);
 }
 
 void error_state(){
@@ -199,6 +201,7 @@ void error_state(){
   turnOffFan(); //turn off fan
 
  ///no stepper motor
+  my_delay(150);
 }
 
 void running_state(){
@@ -217,6 +220,7 @@ void running_state(){
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
   }
+  my_delay(150);
 }
 
 void writeToLCD() {
