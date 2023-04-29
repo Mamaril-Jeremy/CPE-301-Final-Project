@@ -177,7 +177,7 @@ void disabled_state(){
 }
 
 void idle_state(){
-  *portB |= 0b01000000; //turn on green LED on for disabled state
+  *portB |= 0b01000000; //turn on green LED on for idle state
   *portB &= 0b01001111; //turn off all other LEDs
   writeToLCD();
   turnOffFan(); //turn off fan
@@ -197,16 +197,18 @@ void idle_state(){
 }
 
 void error_state(){
-  *portB |= 0b00100000; //turn on red LED on for disabled state
+  *portB |= 0b00100000; //turn on red LED on for error state
   *portB &= 0b00101111; //turn off all other LEDs
-  writeToLCD();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Water level too low.");
   turnOffFan(); //turn off fan
 
  ///no stepper motor
 }
 
 void running_state(){
-  *portB |= 0b00010000; //turn on blue LED on for disabled state
+  *portB |= 0b00010000; //turn on blue LED on for running state
   *portB &= 0b00011111; //turn off all other LEDs
   writeToLCD();
   turnOnFan(); //turn on fan
