@@ -3,6 +3,7 @@
 #include <LiquidCrystal.h>
 #include <Stepper.h>
 #include <dht.h>
+#include <RTClib.h>
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
 #define FAN_ENABLE 30
