@@ -161,7 +161,6 @@ void loop(){
 void disabled_state(){
   *portB |= 0b10000000; //turn on yellow LED on for disabled state
   *portB &= 0b10001111; //turn off all other LEDs
-  writeToLCD(); //display stuff to LCD
   turnOffFan(); //turn off fan
 
   //working with stepper motor
