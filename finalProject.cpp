@@ -69,7 +69,9 @@ void setup(){
   *portB &= 0b11110111; //turn the sensor off
 
   lcd.begin(16, 2); //starts the lcd
-  RTC.begin();
+  RTC.begin(); //starts the real-time clock module
+  DateTime now = DateTime(2022, 5, 2, 0, 0, 0);
+  RTC.adjust(now);
 
   *portDDRA &= 0b10101010; //set all port A to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
@@ -252,14 +254,12 @@ void startButtonISR(){
 
 void resetButtonISR(){
   //Reset Button
-  if(*portPinA &= 0b00010000){
     if(reset){
       reset = false;
     }
     else{
       reset = true;
     }
-  }
 }
 
 //Start of UART functions
