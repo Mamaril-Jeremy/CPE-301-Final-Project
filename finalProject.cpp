@@ -78,26 +78,10 @@ void setup(){
 
 
 void loop(){
-  //start stop button
   
-  if(*portPinA &= 0b01000000){
-    if(start){
-      start = false;
-    }
-    else{
-      start = true;
-    }
-  }
+  attachInterrupt(digitalPinToInterrupt(28), startButtonISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(26), resetButtonISR, FALLING);
 
-  //Reset Button
-  if(*portPinA &= 0b00010000){
-    if(reset){
-      reset = false;
-    }
-    else{
-      reset = true;
-    }
-  }
 
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
@@ -106,18 +90,10 @@ void loop(){
   temp = 50;
   humidity = DHT.humidity;
   waterLevel = 200; 
+  U0putchar((char)waterLevel);
 
   *portB &= 0b11110111; //turn the sensor off
 
-
-  Serial.print( "T = " );
-  Serial.print(DHT.temperature, 1);
-  Serial.print(" deg. C, H = ");
-  Serial.print(DHT.humidity, 1);
-  Serial.println("%");
-  Serial.print("Sensor value: ");
-  Serial.println(waterLevel);
-  Serial.println(currentState);
 
   //changing and updating the state
   if(start == false){
@@ -138,19 +114,15 @@ void loop(){
   //execute the instructions for the state
   switch(currentState) {
     case DISABLED:
-      Serial.println("Disabled State"); //for now
       disabled_state();
       break;
     case IDLE:
-      Serial.println("Idle State");
       idle_state();
       break;
     case ERROR:
-      Serial.println("Error State");
       error_state();
       break;
     case RUNNING:
-      Serial.println("Running State");
       running_state();
       break;
     default:
@@ -267,6 +239,26 @@ void turnOffFan(){
   my_delay(25);
 }
 
+void startButtonISR(){
+  if(start){
+    start = false;
+  }
+  else{
+    start = true;
+  }
+}
+
+void resetButtonISR(){
+  //Reset Button
+  if(*portPinA &= 0b00010000){
+    if(reset){
+      reset = false;
+    }
+    else{
+      reset = true;
+    }
+  }
+}
 
 //Start of UART functions
 void U0init(unsigned long U0baud)
