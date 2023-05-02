@@ -48,7 +48,7 @@ dht DHT;
 RTC_DS1307 RTC; //real-time clock module
 const int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
-bool moveLeft = false, moveRight = false, start, reset;
+bool moveLeft = false, moveRight = false, start = false, reset = false;
 int error, temp, humidity, waterLevel;
 
 
@@ -77,15 +77,28 @@ void setup(){
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
   *portDDRC |= 0b00101000; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3) to output
 
-  start = reset = false;
 }
 
 
 void loop(){
-  DateTime timeNow = RTC.now();
   
-  attachInterrupt(digitalPinToInterrupt(28), startButtonISR, FALLING);
-  attachInterrupt(digitalPinToInterrupt(26), resetButtonISR, FALLING);
+  if(*portPinA &= 0b01000000){
+    if(start == false){
+      start = true;
+    }
+    else{
+      start = false;
+    }
+  }
+  if(*portPinA &= 0b00010000){
+    if(reset == false){
+      reset = true;
+    }
+    else{
+      reset = false;
+    }
+  }
+  DateTime timeNow = RTC.now();
 
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
@@ -93,7 +106,7 @@ void loop(){
   error = DHT.read11(DHT11_PIN);
   temp = 50;
   humidity = DHT.humidity;
-  waterLevel = 200; 
+  waterLevel = 100; 
   U0putchar((char)waterLevel);
 
   *portB &= 0b11110111; //turn the sensor off
@@ -104,16 +117,22 @@ void loop(){
     currentState = DISABLED;
   }
   else{
-    if(reset == true || temp <= TEMP_THRESHOLD){ 
+    if(reset == true){ 
       currentState = IDLE;
     }
-    if(temp > TEMP_THRESHOLD && waterLevel >= WATER_LEVEL_THRESHOLD){
+    else if(temp <= TEMP_THRESHOLD){
+      currentState = IDLE;
+    }
+    else if(temp > TEMP_THRESHOLD && waterLevel >= WATER_LEVEL_THRESHOLD){
       currentState = RUNNING;
     }
-    if(waterLevel < WATER_LEVEL_THRESHOLD){
+    else if(waterLevel < WATER_LEVEL_THRESHOLD){
       currentState = ERROR;
     }
+    else{
+    }
   }
+  Serial.println(currentState);
 
   //execute the instructions for the state
   switch(currentState) {
@@ -131,6 +150,13 @@ void loop(){
       break;
     default:
       break;
+  }
+
+  if(reset == true){
+    Serial.print("1");
+  }
+  else{
+    Serial.print("0");
   }
 }
 //End of loop
@@ -241,25 +267,6 @@ void turnOffFan(){
   *portC &= 0b11110111; // set pin 3 low
   analogWrite(FAN_ENABLE, 0); // set fan enable pin to 0 (turn off)
   my_delay(25);
-}
-
-void startButtonISR(){
-  if(start){
-    start = false;
-  }
-  else{
-    start = true;
-  }
-}
-
-void resetButtonISR(){
-  //Reset Button
-    if(reset){
-      reset = false;
-    }
-    else{
-      reset = true;
-    }
 }
 
 //Start of UART functions
