@@ -45,6 +45,7 @@ volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 dht DHT;
+RTC_DS1307 RTC; //real-time clock module
 const int stepsPerRev = 2038;
 Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
 bool moveLeft = false, moveRight = false, start, reset;
@@ -68,6 +69,7 @@ void setup(){
   *portB &= 0b11110111; //turn the sensor off
 
   lcd.begin(16, 2); //starts the lcd
+  RTC.begin();
 
   *portDDRA &= 0b10101010; //set all port A to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
@@ -78,10 +80,10 @@ void setup(){
 
 
 void loop(){
+  DateTime timeNow = RTC.now();
   
   attachInterrupt(digitalPinToInterrupt(28), startButtonISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(26), resetButtonISR, FALLING);
-
 
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
