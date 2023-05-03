@@ -70,7 +70,7 @@ void setup(){
 
   lcd.begin(16, 2); //starts the lcd
   RTC.begin(); //starts the real-time clock module
-  DateTime now = DateTime(2022, 5, 2, 0, 0, 0);
+  DateTime now = DateTime(2023, 5, 2, 0, 0, 0);
   RTC.adjust(now);
 
   *portDDRA &= 0b10101010; //set all port A to input
