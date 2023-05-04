@@ -49,7 +49,7 @@ dht DHT;
 RTC_DS1307 RTC; //real-time clock module
 //Step Motor
 const int stepsPerRev = 2048;
-const int motorSpeed = 10;
+const int motorSpeed = 150;
 Stepper myStepper = Stepper(stepsPerRev, 2, 4, 3, 5); //pins 2-5 taken
 
 bool moveLeft = false, moveRight = false, start = false, reset = false;
@@ -156,6 +156,19 @@ void loop(){
       break;
   }
 
+  if(*portPinA &= 0b00000100){
+    if(currentState != ERROR){
+      myStepper.setSpeed(motorSpeed);
+      myStepper.step(-1);
+    }
+  }
+  if(*portPinA &= 0b00000001){
+    if(currentState != ERROR){
+      myStepper.setSpeed(motorSpeed);
+      myStepper.step(1);
+    }
+  }  
+
   if(reset == true){
     Serial.print("1");
   }
@@ -171,7 +184,7 @@ void disabled_state(){
   turnOffFan(); //turn off fan
 
   //working with stepper motor
-  if(*portPinA &= 0b00000100){
+  /*if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
   if(*portPinA &= 0b00000001){
@@ -179,7 +192,7 @@ void disabled_state(){
   }
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
-  }
+  }*/
 }
 
 void idle_state(){
@@ -189,7 +202,7 @@ void idle_state(){
   turnOffFan(); //turn off fan
 
   //working with stepper motor
-  if(*portPinA &= 0b00000100){
+  /*if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
 
@@ -199,7 +212,7 @@ void idle_state(){
 
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
-  }
+  }*/
 }
 
 void error_state(){
@@ -220,7 +233,7 @@ void running_state(){
   turnOnFan(); //turn on fan
 
   //working with stepper motor
-  if(*portPinA &= 0b00000100){
+  /*if(*portPinA &= 0b00000100){
     moveLeft = true;
   }
   if(*portPinA &= 0b00000001){
@@ -228,7 +241,7 @@ void running_state(){
   }
   if(moveLeft == true  || moveRight == true){
     moveVent(moveLeft, moveRight);
-  }
+  }*/
 }
 
 void writeToLCD() {
