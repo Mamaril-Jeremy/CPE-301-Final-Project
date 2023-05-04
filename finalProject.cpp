@@ -108,10 +108,10 @@ void loop(){
   my_delay(10);
 
   error = DHT.read11(DHT11_PIN);
-  temp = 50;
+  temp = DHT.temperature;
   humidity = DHT.humidity;
-  waterLevel = 100; 
-  U0putchar((char)waterLevel);
+  waterLevel = adc_read(WATER_SENSOR_PIN); 
+  
 
   *portB &= 0b11110111; //turn the sensor off
 
@@ -248,11 +248,11 @@ void writeToLCD() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Temp: ");
-  lcd.print(DHT.temperature);
+  lcd.print(temp);
   lcd.print("C");
   lcd.setCursor(0, 1);
   lcd.print("Humidity: ");
-  lcd.print(DHT.humidity);
+  lcd.print(humidity);
   lcd.print("%");
 }
 
