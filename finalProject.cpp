@@ -45,9 +45,13 @@ volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
 LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
 dht DHT;
+
 RTC_DS1307 RTC; //real-time clock module
-const int stepsPerRev = 2038;
-Stepper myStepper = Stepper(stepsPerRev, 2, 3, 4, 5); //pins 2-5 taken
+//Step Motor
+const int stepsPerRev = 2048;
+const int motorSpeed = 10;
+Stepper myStepper = Stepper(stepsPerRev, 2, 4, 3, 5); //pins 2-5 taken
+
 bool moveLeft = false, moveRight = false, start = false, reset = false;
 int error, temp, humidity, waterLevel;
 
@@ -242,14 +246,14 @@ void writeToLCD() {
 
 void moveVent(bool left, bool right){
   if(left == true){
-    myStepper.setSpeed(5);
-    myStepper.step(-stepsPerRev);
-    my_delay(10);
+    myStepper.setSpeed(motorSpeed);
+    myStepper.step(-1);
+    //my_delay(10);
   }
   if(right == true){
-    myStepper.setSpeed(5);
-    myStepper.step(stepsPerRev);
-    my_delay(10);
+    myStepper.setSpeed(motorSpeed);
+    myStepper.step(1);
+    //my_delay(10);
   }
 }
 
