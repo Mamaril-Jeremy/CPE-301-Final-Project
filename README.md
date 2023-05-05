@@ -1,4 +1,5 @@
 # CPE-301-Final-Project
+# Group Name: Detonating a Bomb 
 ## Jeremy Mamaril and Brandon (Ri) Yu
 
 ## Objective
