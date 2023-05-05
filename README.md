@@ -1,5 +1,5 @@
 # CPE-301-Final-Project
-# Group Name: Too Many Wires
+## Group Name: Too Many Wires
 ## Jeremy Mamaril and Brandon (Ri) Yu
 
 ## Objective
