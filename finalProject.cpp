@@ -108,8 +108,29 @@ void loop(){
   *portB |= 0b00001000; //turn the water sensor on
   my_delay(10);
 
-  *portB &= 0b11110111; //turn the sensor off
-
+  if(currentState!=DISABLED){
+      error = DHT.read11(DHT11_PIN);
+      temp = DHT.temperature;
+      humidity = DHT.humidity;
+      waterLevel = adc_read(WATER_SENSOR_PIN); 
+      if(currentState!=ERROR){
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temp);
+        lcd.print("C");
+        lcd.setCursor(0, 1);
+        lcd.print("Humidity: ");
+        lcd.print(humidity);
+        lcd.print("%");
+      }
+      else{
+        lcd.setCursor(0, 0);
+        lcd.print("Water level too low.");
+        lcd.setCursor(0, 1);
+        lcd.print("Level: ");
+        lcd.print(waterLevel);
+      } 
+  }
 
   //changing and updating the state
   if(start == false){
@@ -128,30 +149,7 @@ void loop(){
     else if(waterLevel < WATER_LEVEL_THRESHOLD){
       currentState = ERROR;
     }
-    else{
-    }
-  }
-  
-  if(currentState!=ERROR){
-      error = DHT.read11(DHT11_PIN);
-      temp = 50;
-      humidity = 100;
-      waterLevel = 200; 
-      lcd.setCursor(0, 0);
-      lcd.print("Temp: ");
-      lcd.print(temp);
-      lcd.print("C");
-      lcd.setCursor(0, 1);
-      lcd.print("Humidity: ");
-      lcd.print(humidity);
-      lcd.print("%");
-  }
-  else{
-      lcd.setCursor(0, 0);
-      lcd.print("Water level too low.");
-      lcd.setCursor(0, 1);
-      lcd.print("Level: ");
-      lcd.print(waterLevel);
+    else{}
   }
   
   //execute the instructions for the state
@@ -183,7 +181,7 @@ void loop(){
       myStepper.setSpeed(motorSpeed);
       myStepper.step(1);
     }
-  }  
+  }
 }
 //End of loop
 
