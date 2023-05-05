@@ -127,7 +127,7 @@ void loop(){
       }
       else{
         lcd.setCursor(0, 0);
-        lcd.print("Water level too low.");
+        lcd.print("Low water.");
         lcd.setCursor(0, 1);
         lcd.print("Level: ");
         lcd.print(waterLevel);
