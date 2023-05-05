@@ -43,7 +43,7 @@ volatile unsigned int  *myTCNT1  = (unsigned  int *) 0x84;
 volatile unsigned char *myTIFR1 =  (unsigned char *) 0x36;
 
 
-LiquidCrystal lcd(16, 17, 18, 19, 20, 21); //creates lcd object - pins 16-21 taken
+LiquidCrystal lcd(43,45,47,49,51,53); //creates lcd object - pins 43-53 taken
 dht DHT;
 
 RTC_DS1307 RTC; //real-time clock module
@@ -73,6 +73,7 @@ void setup(){
   *portB &= 0b11110111; //turn the sensor off
 
   lcd.begin(16, 2); //starts the lcd
+
   RTC.begin(); //starts the real-time clock module
   DateTime now = DateTime(2023, 5, 2, 0, 0, 0);
   RTC.adjust(now);
@@ -108,10 +109,20 @@ void loop(){
   my_delay(10);
 
   error = DHT.read11(DHT11_PIN);
-  temp = DHT.temperature;
-  humidity = DHT.humidity;
-  waterLevel = adc_read(WATER_SENSOR_PIN); 
-  
+  temp = 50;
+  humidity = 100;
+  waterLevel = 200; 
+
+  lcd.setCursor(0, 0);
+  lcd.print("Temp: ");
+  lcd.print(temp);
+  lcd.print("C");
+  lcd.setCursor(0, 1);
+  lcd.print("Humidity: ");
+  lcd.print(humidity);
+  lcd.print("%");
+
+  my_delay(5000);
 
   *portB &= 0b11110111; //turn the sensor off
 
@@ -179,7 +190,6 @@ void disabled_state(){
 void idle_state(){
   *portB |= 0b01000000; //turn on green LED on for idle state
   *portB &= 0b01001111; //turn off all other LEDs
-  writeToLCD();
   turnOffFan(); //turn off fan
 }
 
@@ -197,20 +207,7 @@ void error_state(){
 void running_state(){
   *portB |= 0b00010000; //turn on blue LED on for running state
   *portB &= 0b00011111; //turn off all other LEDs
-  writeToLCD();
   turnOnFan(); //turn on fan
-}
-
-void writeToLCD() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Temp: ");
-  lcd.print(temp);
-  lcd.print("C");
-  lcd.setCursor(0, 1);
-  lcd.print("Humidity: ");
-  lcd.print(humidity);
-  lcd.print("%");
 }
 
 void moveVent(bool left, bool right){
