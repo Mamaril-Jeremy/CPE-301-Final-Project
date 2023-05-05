@@ -10,7 +10,7 @@
 #define WATER_LEVEL_THRESHOLD 150
 #define TEMP_THRESHOLD 25
 
-#define DHT11_PIN 34
+#define DHT11_PIN 36
 
 #define RDA 0x80
 #define TBE 0x20 
@@ -136,8 +136,7 @@ void loop(){
     else{
     }
   }
-  Serial.println(currentState);
-
+  
   //execute the instructions for the state
   switch(currentState) {
     case DISABLED:
@@ -168,13 +167,6 @@ void loop(){
       myStepper.step(1);
     }
   }  
-
-  if(reset == true){
-    Serial.print("1");
-  }
-  else{
-    Serial.print("0");
-  }
 }
 //End of loop
 
@@ -182,17 +174,6 @@ void disabled_state(){
   *portB |= 0b10000000; //turn on yellow LED on for disabled state
   *portB &= 0b10001111; //turn off all other LEDs
   turnOffFan(); //turn off fan
-
-  //working with stepper motor
-  /*if(*portPinA &= 0b00000100){
-    moveLeft = true;
-  }
-  if(*portPinA &= 0b00000001){
-    moveRight = true;
-  }
-  if(moveLeft == true  || moveRight == true){
-    moveVent(moveLeft, moveRight);
-  }*/
 }
 
 void idle_state(){
@@ -200,19 +181,6 @@ void idle_state(){
   *portB &= 0b01001111; //turn off all other LEDs
   writeToLCD();
   turnOffFan(); //turn off fan
-
-  //working with stepper motor
-  /*if(*portPinA &= 0b00000100){
-    moveLeft = true;
-  }
-
-  if(*portPinA &= 0b00000001){
-    moveRight = true;
-  }
-
-  if(moveLeft == true  || moveRight == true){
-    moveVent(moveLeft, moveRight);
-  }*/
 }
 
 void error_state(){
@@ -231,17 +199,6 @@ void running_state(){
   *portB &= 0b00011111; //turn off all other LEDs
   writeToLCD();
   turnOnFan(); //turn on fan
-
-  //working with stepper motor
-  /*if(*portPinA &= 0b00000100){
-    moveLeft = true;
-  }
-  if(*portPinA &= 0b00000001){
-    moveRight = true;
-  }
-  if(moveLeft == true  || moveRight == true){
-    moveVent(moveLeft, moveRight);
-  }*/
 }
 
 void writeToLCD() {
@@ -255,7 +212,6 @@ void writeToLCD() {
   lcd.print(humidity);
   lcd.print("%");
 }
-
 
 void moveVent(bool left, bool right){
   if(left == true){
