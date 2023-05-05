@@ -66,10 +66,10 @@ enum States {
 enum States currentState = DISABLED;
 
 void setup(){
-  U0init(9600);
+  Serial.begin(9600);
   adc_init(); //initializes the ADC
   
-  *portDDRB |= 0b11111000; //using pwm pins 10-13 for LEDs, pin 50 for power to water sensor
+  *portDDRB |= 0b11110000; //using pwm pins 10-13 for LEDs, pin 50 for power to water sensor
   *portB &= 0b11110111; //turn the sensor off
 
   lcd.begin(16, 2); //starts the lcd
@@ -105,15 +105,11 @@ void loop(){
   }
   DateTime timeNow = RTC.now();
 
-  *portB |= 0b00001000; //turn the water sensor on
-  my_delay(10);
-
   if(currentState!=DISABLED){
       error = DHT.read11(DHT11_PIN);
       temp = DHT.temperature;
       humidity = DHT.humidity;
-      waterLevel = adc_read(WATER_SENSOR_PIN); 
-      *portB &= 0b11110111; //turn the water sensor off
+      waterLevel = adc_read(WATER_SENSOR_PIN);
     
       if(currentState!=ERROR){
         lcd.setCursor(0, 0);
