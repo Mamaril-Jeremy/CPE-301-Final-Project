@@ -132,6 +132,28 @@ void loop(){
     }
   }
   
+  if(currentState!=ERROR){
+      error = DHT.read11(DHT11_PIN);
+      temp = 50;
+      humidity = 100;
+      waterLevel = 200; 
+      lcd.setCursor(0, 0);
+      lcd.print("Temp: ");
+      lcd.print(temp);
+      lcd.print("C");
+      lcd.setCursor(0, 1);
+      lcd.print("Humidity: ");
+      lcd.print(humidity);
+      lcd.print("%");
+  }
+  else{
+      lcd.setCursor(0, 0);
+      lcd.print("Water level too low.");
+      lcd.setCursor(0, 1);
+      lcd.print("Level: ");
+      lcd.print(waterLevel);
+  }
+  
   //execute the instructions for the state
   switch(currentState) {
     case DISABLED:
@@ -174,33 +196,12 @@ void disabled_state(){
 void idle_state(){
   *portB |= 0b01000000; //turn on green LED on for idle state
   *portB &= 0b01001111; //turn off all other LEDs
-  
-  error = DHT.read11(DHT11_PIN);
-  temp = 50;
-  humidity = 100;
-  waterLevel = 200; 
-  
-  lcd.setCursor(0, 0);
-  lcd.print("Temp: ");
-  lcd.print(temp);
-  lcd.print("C");
-  lcd.setCursor(0, 1);
-  lcd.print("Humidity: ");
-  lcd.print(humidity);
-  lcd.print("%");
-  
   turnOffFan(); //turn off fan
 }
 
 void error_state(){
   *portB |= 0b00100000; //turn on red LED on for error state
   *portB &= 0b00101111; //turn off all other LEDs
-  lcd.setCursor(0, 0);
-  lcd.print("Water level too low.");
-  lcd.setCursor(0, 1);
-  lcd.print("Level: ");
-  lcd.print(waterLevel);
-  
   turnOffFan(); //turn off fan
 
  ///no stepper motor
@@ -209,21 +210,6 @@ void error_state(){
 void running_state(){
   *portB |= 0b00010000; //turn on blue LED on for running state
   *portB &= 0b00011111; //turn off all other LEDs
-   
-  error = DHT.read11(DHT11_PIN);
-  temp = 50;
-  humidity = 100;
-  waterLevel = 200; 
-  
-  lcd.setCursor(0, 0);
-  lcd.print("Temp: ");
-  lcd.print(temp);
-  lcd.print("C");
-  lcd.setCursor(0, 1);
-  lcd.print("Humidity: ");
-  lcd.print(humidity);
-  lcd.print("%");
-  
   turnOnFan(); //turn on fan
 }
 
@@ -231,12 +217,10 @@ void moveVent(bool left, bool right){
   if(left == true){
     myStepper.setSpeed(motorSpeed);
     myStepper.step(-1);
-    //my_delay(10);
   }
   if(right == true){
     myStepper.setSpeed(motorSpeed);
     myStepper.step(1);
-    //my_delay(10);
   }
 }
 
