@@ -1,4 +1,5 @@
 //Author: Jeremy Mamaril and Brandon (Ri) Yu
+//CPE 301 Final Project
 
 #include <LiquidCrystal.h>
 #include <Stepper.h>
@@ -104,7 +105,7 @@ void loop(){
     }
   }
   DateTime timeNow = RTC.now();
-
+  
   if(currentState!=DISABLED){
       error = DHT.read11(DHT11_PIN);
       temp = DHT.temperature;
@@ -115,6 +116,7 @@ void loop(){
       *portB &= 0b11110111; //turn the water sensor off
     
       if(currentState!=ERROR){
+        lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Temp: ");
         lcd.print(temp);
