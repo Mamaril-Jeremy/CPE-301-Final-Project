@@ -70,8 +70,7 @@ void setup(){
   Serial.begin(9600);
   adc_init(); //initializes the ADC
   
-  *portDDRB |= 0b11111000; //using pwm pins 10-13 for LEDs, pin 50 for power to water sensor
-  *portB &= 0b11110111; //turn the sensor off
+  *portDDRB |= 0b11110000; //using pwm pins 10-13 for LEDs
 
   lcd.begin(16, 2); //starts the lcd
 
@@ -82,7 +81,6 @@ void setup(){
   *portDDRA &= 0b10101010; //set all port A to input
   *portB |= 0b10000000; //turn on yellow Led on for disabled state
   *portDDRC |= 0b00101000; //initializes pins 32 (DIR1:PC5), 34(DIR2:PC3) to output
-
 }
 
 
@@ -110,10 +108,9 @@ void loop(){
       error = DHT.read11(DHT11_PIN);
       temp = DHT.temperature;
       humidity = DHT.humidity;
-      *portB |= 0b00001000; //turn the water sensor on
+    
       my_delay(10);
       waterLevel = adc_read(WATER_SENSOR_PIN);
-      *portB &= 0b11110111; //turn the water sensor off
     
       if(currentState!=ERROR){
         lcd.clear();
@@ -193,26 +190,52 @@ void disabled_state(){
   *portB |= 0b10000000; //turn on yellow LED on for disabled state
   *portB &= 0b10001111; //turn off all other LEDs
   turnOffFan(); //turn off fan
+  U0putchar('D');
+  U0putchar('i');
+  U0putchar('s');
+  U0putchar('a');
+  U0putchar('b');
+  U0putchar('l');
+  U0putchar('e');
+  U0putchar('d');
+  U0putchar('\n');
 }
 
 void idle_state(){
   *portB |= 0b01000000; //turn on green LED on for idle state
   *portB &= 0b01001111; //turn off all other LEDs
   turnOffFan(); //turn off fan
+  U0putchar('I');
+  U0putchar('d');
+  U0putchar('l');
+  U0putchar('e');
+  U0putchar('\n');
 }
 
 void error_state(){
   *portB |= 0b00100000; //turn on red LED on for error state
   *portB &= 0b00101111; //turn off all other LEDs
   turnOffFan(); //turn off fan
-
- ///no stepper motor
+  U0putchar('E');
+  U0putchar('r');
+  U0putchar('r');
+  U0putchar('o');
+  U0putchar('r');
+  U0putchar('\n');
 }
 
 void running_state(){
   *portB |= 0b00010000; //turn on blue LED on for running state
   *portB &= 0b00011111; //turn off all other LEDs
   turnOnFan(); //turn on fan
+  U0putchar('R');
+  U0putchar('u');
+  U0putchar('n');
+  U0putchar('n');
+  U0putchar('i');
+  U0putchar('n');
+  U0putchar('g');
+  U0putchar('\n');
 }
 
 void moveVent(bool left, bool right){
