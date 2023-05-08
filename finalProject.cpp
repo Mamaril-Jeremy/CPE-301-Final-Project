@@ -67,7 +67,7 @@ enum States {
 enum States currentState = DISABLED;
 
 void setup(){
-  Serial.begin(9600);
+  U0init(9600);
   adc_init(); //initializes the ADC
   
   *portDDRB |= 0b11110000; //using pwm pins 10-13 for LEDs
