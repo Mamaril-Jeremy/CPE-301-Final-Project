@@ -128,16 +128,16 @@ void loop(){
   //execute the instructions for the state
   switch(currentState) {
     case DISABLED:
-      disabled_state();
+      disabledState();
       break;
     case IDLE:
-      idle_state();
+      idleState();
       break;
     case ERROR:
-      error_state();
+      errorState();
       break;
     case RUNNING:
-      running_state();
+      runningState();
       break;
     default:
       break;
@@ -191,7 +191,7 @@ void loop(){
 }
 //End of loop
 
-void disabled_state(){
+void disabledState(){
   *portB |= 0b10000000; //turn on yellow LED on for disabled state
   *portB &= 0b10001111; //turn off all other LEDs
   turnOffFan(); //turn off fan
@@ -206,7 +206,7 @@ void disabled_state(){
   U0putchar('\n');
 }
 
-void idle_state(){
+void idleState(){
   *portB |= 0b01000000; //turn on green LED on for idle state
   *portB &= 0b01001111; //turn off all other LEDs
   turnOffFan(); //turn off fan
@@ -217,7 +217,7 @@ void idle_state(){
   U0putchar('\n');
 }
 
-void error_state(){
+void errorState(){
   *portB |= 0b00100000; //turn on red LED on for error state
   *portB &= 0b00101111; //turn off all other LEDs
   turnOffFan(); //turn off fan
@@ -229,7 +229,7 @@ void error_state(){
   U0putchar('\n');
 }
 
-void running_state(){
+void runningState(){
   *portB |= 0b00010000; //turn on blue LED on for running state
   *portB &= 0b00011111; //turn off all other LEDs
   turnOnFan(); //turn on fan
