@@ -8,8 +8,8 @@
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
 #define FAN_ENABLE 30
-#define WATER_LEVEL_THRESHOLD 275
-#define TEMP_THRESHOLD 25
+#define WATER_LEVEL_THRESHOLD 0
+#define TEMP_THRESHOLD 0
 
 #define DHT11_PIN 36
 
@@ -22,7 +22,7 @@ volatile unsigned char *portB = (unsigned char *) 0x25; //pins 9-13 taken
 
 volatile unsigned char *portPinA = (unsigned char *) 0x20;
 volatile unsigned char *portDDRA = (unsigned char *) 0x21; //Button
-volatile unsigned char *portA = (unsigned char *) 0x22; //pins 22-28 taken
+volatile unsigned char *portA = (unsigned char *) 0x22; //pins 22-28 taken                                                              
 
 volatile unsigned char *portPinC = (unsigned char *) 0x26;
 volatile unsigned char *portDDRC = (unsigned char *) 0x27; //For motor 
@@ -104,34 +104,6 @@ void loop(){
   }
   DateTime timeNow = RTC.now();
   
-  if(currentState!=DISABLED){
-      error = DHT.read11(DHT11_PIN);
-      temp = DHT.temperature;
-      humidity = DHT.humidity;
-    
-      my_delay(10);
-      waterLevel = adc_read(WATER_SENSOR_PIN);
-    
-      if(currentState!=ERROR){
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("Temp: ");
-        lcd.print(temp);
-        lcd.print((char)223);
-        lcd.print("C");
-        lcd.setCursor(0, 1);
-        lcd.print("Humidity: ");
-        lcd.print(humidity);
-        lcd.print("%");
-      }
-      else{
-        lcd.setCursor(0, 0);
-        lcd.print("Low water.");
-        lcd.setCursor(0, 1);
-        lcd.print("Level: ");
-        lcd.print(waterLevel);
-      } 
-  }
 
   //changing and updating the state
   if(start == false){
@@ -169,6 +141,39 @@ void loop(){
       break;
     default:
       break;
+  }
+
+  if(currentState!=DISABLED){
+      error = DHT.read11(DHT11_PIN);
+      temp = DHT.temperature;
+      humidity = DHT.humidity;
+    
+      my_delay(10);
+      waterLevel = adc_read(WATER_SENSOR_PIN);
+      
+      
+
+      if(currentState != ERROR){
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temp);
+        lcd.print((char)223);
+        lcd.print("C");
+        lcd.setCursor(0, 1);
+        lcd.print("Humidity: ");
+        lcd.print(humidity);
+        lcd.print("%");
+      }
+      else if(currentState!=DISABLED){
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Low water.");
+        lcd.setCursor(0, 1);
+        lcd.print("Level: ");
+        lcd.print(waterLevel);
+      } 
+      else{}
   }
 
   if(*portPinA &= 0b00000100){
@@ -343,3 +348,4 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }
+
