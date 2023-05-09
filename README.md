@@ -16,3 +16,4 @@ Finally, the sensors we used to determine the water levels, temperature, and hum
 Certain constraints for this project were the fact that we could only use the components in our lab kit and not much else and only the Arduino ATMega 2560 and not another kind of microcontroller. In addition, it was difficult not being able to use the library functions for GPIO, ADCs, and UARTS, but instead had to use the registers and bit manipulation. We therefore used the specification sheets shown below to help with this. The time limit was also quite a constraint, especially at this last stretch of the semester.
 
 ## Youtube Link
+https://youtu.be/paajbWrxSJQ
