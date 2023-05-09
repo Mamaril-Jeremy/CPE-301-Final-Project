@@ -8,8 +8,8 @@
 
 #define WATER_SENSOR_PIN 5 //ADC channel 5
 #define FAN_ENABLE 30
-#define WATER_LEVEL_THRESHOLD 0
-#define TEMP_THRESHOLD 0
+#define WATER_LEVEL_THRESHOLD 200
+#define TEMP_THRESHOLD 20
 
 #define DHT11_PIN 36
 
